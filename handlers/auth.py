@@ -2,7 +2,6 @@ from uuid import uuid4
 from aiogram import types, Router, F
 from aiogram.filters import Command, CommandStart, CommandObject
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 
 from utils.db import db
 from utils.auth import todoist_auth
@@ -23,8 +22,8 @@ async def authenticate_handler(message: types.Message, state: FSMContext):
     auth_state = str(uuid4())
     url = todoist_auth.get_auth_url(auth_state)
 
-    keyboard = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="Авторизоваться в Todoist", url=url)]
+    keyboard = types.InlineKeyboardMarkup(inline_keyboard=[
+        [types.InlineKeyboardButton(text="Авторизоваться в Todoist", url=url)]
     ])
 
     await message.answer(text.START_AUTH, parse_mode="html", reply_markup=keyboard)
@@ -32,7 +31,7 @@ async def authenticate_handler(message: types.Message, state: FSMContext):
 
 
 @auth_router.message(CommandStart())
-async def start_handler(message: Message, command: CommandObject, state: FSMContext):
+async def start_handler(message: types.Message, command: CommandObject, state: FSMContext):
     args = command.args
 
     if not args:
@@ -58,8 +57,14 @@ async def start_handler(message: Message, command: CommandObject, state: FSMCont
 
 @auth_router.message(Command("logout"))
 async def logout_handler(message: types.Message, state: FSMContext):
-    keyboard = InlineKeyboardMarkup(inline_keyboard=[[
-        InlineKeyboardButton(
+    token = await db.get_token(message.from_user.id)
+    if not token:
+        await message.answer("Todoist и так не привязан 🤗", parse_mode="html")
+        await state.clear()
+        return
+
+    keyboard = types.InlineKeyboardMarkup(inline_keyboard=[[
+        types.InlineKeyboardButton(
             text="Да, отвязать Todoist аккаунт",
             callback_data="confirm_logout"
         )
@@ -71,8 +76,14 @@ async def logout_handler(message: types.Message, state: FSMContext):
 
 @auth_router.callback_query(F.data == "confirm_logout")
 async def confirm_logout_callback(callback_query: types.CallbackQuery, state: FSMContext):
+    token = await db.get_token(callback_query.message.from_user.id)
+
+    success = await todoist_auth.reveal_access_token(token.access_token)
     await db.reveal_token(callback_query.from_user.id)
 
-    await callback_query.message.edit_text(text.LOGOUT_SUCCESS, parse_mode="html")
+    await callback_query.message.edit_text(
+        text.LOGOUT_SUCCESS if success else text.LOGOUT_FAILED,
+        parse_mode="html"
+    )
     await callback_query.answer()
     await state.clear()

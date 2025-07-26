@@ -6,7 +6,7 @@ from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram import Bot, Dispatcher
 from config.core import Config
 from utils.db import db
-from handlers import common, auth
+from handlers import common, auth, todo
 
 
 async def main():
@@ -17,8 +17,11 @@ async def main():
     storage = MemoryStorage()
     dp = Dispatcher(storage=storage)
 
-    dp.include_router(common.common_router)
-    dp.include_router(auth.auth_router)
+    dp.include_routers(
+        common.common_router,
+        auth.auth_router,
+        todo.todo_router
+    )
 
     await bot.set_my_commands([
         BotCommand(command="start", description="Запустить бота"),
@@ -27,6 +30,8 @@ async def main():
         BotCommand(command="authenticate",
                    description="Привязать Todoist аккаунт"),
         BotCommand(command="logout", description="Отвязать Todoist аккаунт"),
+
+        BotCommand(command="add", description="Добавить задачу в Todoist"),
     ])
 
     await db.init_db()
