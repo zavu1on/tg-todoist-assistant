@@ -14,7 +14,7 @@ todo_router = Router()
 
 @todo_router.message(Command("add"))
 async def add_handler(message: types.Message):
-    await message.reply(text.ADD_TASK, parse_mode="html")
+    await message.answer(text.ADD_TASK, parse_mode="html")
 
 
 @todo_router.message(Command("daily_summary"))
@@ -40,7 +40,6 @@ async def get_daily_summary(message: types.Message):
             "description": task.description,
             "priority": task.priority or 0,
             "due_datetime": task.due.date.isoformat() if task.due else None,
-            "labels": task.labels,
         } for task in tasks
     ], ensure_ascii=False)
 
@@ -79,7 +78,6 @@ async def get_daily_summary(message: types.Message):
             "description": task.description,
             "priority": task.priority or 0,
             "due_datetime": task.due.date.isoformat() if task.due else None,
-            "labels": task.labels,
         } for task in tasks
     ], ensure_ascii=False)
 

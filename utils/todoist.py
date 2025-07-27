@@ -19,7 +19,6 @@ class Todoist:
                 description: A description of the task (optional)
                 priority: The priority of the task (1-4) (optional)
                 due_datetime: The due datetime of the task in ISO 8601 format (optional)
-                labels: A list of strings of the labels to add to the task (optional)
 
         Returns:
             A Task object with the ID of the newly created task
@@ -36,24 +35,37 @@ class Todoist:
         daily_tasks = []
         async for task_list in all_tasks:
             for task in task_list:
-                if task.due and task.due.date.date() == today:
-                    daily_tasks.append(task)
+                if task.due:
+                    task_due_date = date(
+                        task.due.date.year,
+                        task.due.date.month,
+                        task.due.date.day,
+                    )
+                    if task_due_date == today:
+                        daily_tasks.append(task)
 
         return daily_tasks
 
     async def get_weekly_tasks(self, token: str) -> list[Task]:
         client = self.get_api_client(token)
         all_tasks = await client.get_tasks()
-        start_day = date.today()
-        end_day = date.today() + timedelta(days=7)
 
-        daily_tasks = []
+        start_day = date.today()
+        end_day = start_day + timedelta(days=7)
+
+        weekly_tasks = []
         async for task_list in all_tasks:
             for task in task_list:
-                if task.due and start_day <= task.due.date.date() <= end_day:
-                    daily_tasks.append(task)
+                if task.due:
+                    task_due_date = date(
+                        task.due.date.year,
+                        task.due.date.month,
+                        task.due.date.day,
+                    )
+                    if start_day <= task_due_date <= end_day:
+                        weekly_tasks.append(task)
 
-        return daily_tasks
+        return weekly_tasks
 
 
 todoist = Todoist()

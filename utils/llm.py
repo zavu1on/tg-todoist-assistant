@@ -1,13 +1,13 @@
 from datetime import datetime
 from openai import AsyncOpenAI
-from openai.types.chat import ChatCompletion
 
 from assets import text
 from config.core import Config
 
 
 def get_time_context() -> str:
-    return f"Сегодняшня дата и время: {datetime.now()}, день недели: {datetime.now().strftime('%A')}, неделя начинается с Monday"
+    now = datetime.now()
+    return f"Сегодняшня дата и время: {now}, день недели: {now.strftime('%A')}, неделя начинается с Monday"
 
 
 class LLM:

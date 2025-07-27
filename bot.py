@@ -38,7 +38,7 @@ async def main():
         ),
         BotCommand(
             command="weekly_summary",
-            description="Получить сводку на день"
+            description="Получить сводку на неделю"
         ),
     ])
 
