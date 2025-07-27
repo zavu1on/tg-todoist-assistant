@@ -6,7 +6,7 @@ from aiogram.filters import Command
 
 from utils.llm import llm
 from utils.todoist import todoist
-from utils.helpers import get_token_or_go_auth
+from utils.helpers import get_token_or_go_auth, log_http_request, ConnectorType
 from assets import text
 
 todo_router = Router()
@@ -25,7 +25,15 @@ async def get_daily_summary(message: types.Message):
 
     new_message = await message.answer("Собираем сводку на день.. 🤖")
 
-    tasks = await todoist.get_daily_tasks(token.access_token)
+    tasks = await log_http_request(
+        todoist.get_daily_tasks,
+        message,
+        ConnectorType.TODOIST,
+        token.access_token
+    )
+    if tasks is None:
+        return
+
     tasks_prompt = json.dumps([
         {
             "content": task.content,
@@ -35,7 +43,15 @@ async def get_daily_summary(message: types.Message):
             "labels": task.labels,
         } for task in tasks
     ], ensure_ascii=False)
-    response = await llm.get_daily_summary(tasks_prompt)
+
+    response = await log_http_request(
+        llm.get_daily_summary,
+        message,
+        ConnectorType.OPENROUTER,
+        tasks_prompt
+    )
+    if response is None:
+        return
 
     await new_message.edit_text(response, parse_mode="Markdown")
 
@@ -48,7 +64,15 @@ async def get_daily_summary(message: types.Message):
 
     new_message = await message.answer("Собираем сводку на неделю.. 🤖")
 
-    tasks = await todoist.get_weekly_tasks(token.access_token)
+    tasks = await log_http_request(
+        todoist.get_weekly_tasks,
+        message,
+        ConnectorType.TODOIST,
+        token.access_token
+    )
+    if tasks is None:
+        return
+
     tasks_prompt = json.dumps([
         {
             "content": task.content,
@@ -58,7 +82,15 @@ async def get_daily_summary(message: types.Message):
             "labels": task.labels,
         } for task in tasks
     ], ensure_ascii=False)
-    response = await llm.get_weekly_summary(tasks_prompt)
+
+    response = await log_http_request(
+        llm.get_weekly_summary,
+        message,
+        ConnectorType.OPENROUTER,
+        tasks_prompt
+    )
+    if response is None:
+        return
 
     await new_message.edit_text(response, parse_mode="Markdown")
 
@@ -71,7 +103,15 @@ async def create_new_task_handler(message: types.Message):
 
     new_message = await message.answer("Обрабатываем запрос.. 🤖")
 
-    data = await llm.get_add_todo_data(message.text)
+    data = await log_http_request(
+        llm.get_add_todo_data,
+        message,
+        ConnectorType.OPENROUTER,
+        message.text
+    )
+    if data is None:
+        return
+
     data: list[dict] = json.loads(data)
 
     if not data:
@@ -90,7 +130,7 @@ async def create_new_task_handler(message: types.Message):
             task = await todoist.create_task(token.access_token, obj)
             tasks.append(task)
     except:
-        await new_message.edit_text(text.CREATE_TASK_FAILED, parse_mode="html")
+        await new_message.edit_text(text.ADD_TASK_FAILED, parse_mode="html")
         return
 
     await new_message.edit_text(
