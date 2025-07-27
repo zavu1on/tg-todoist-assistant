@@ -11,7 +11,7 @@ from handlers import common, auth, todo
 
 async def main():
     Config.validate()
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(level=logging.ERROR)
 
     bot = Bot(token=Config.BOT_TOKEN)
     storage = MemoryStorage()
