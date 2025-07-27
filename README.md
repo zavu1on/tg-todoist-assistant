@@ -4,8 +4,6 @@
 
 This bot allows you to **add**, **view**, and **organize** your Todoist tasks directly from Telegram. It leverages the **Todoist API** for task management and integrates **LLM models via OpenRouter** to enhance task descriptions and generate smart suggestions.
 
----
-
 ## 🚀 Features
 
 - 📌 Add tasks with natural language
@@ -13,8 +11,6 @@ This bot allows you to **add**, **view**, and **organize** your Todoist tasks di
 - 🧠 Use AI to rephrase and clarify task descriptions
 - 🔁 OAuth authentication with Todoist
 - 💬 Simple, intuitive Telegram interface
-
----
 
 ## ⚙️ Setup Guide
 
@@ -56,8 +52,6 @@ OPENROUTER_API_KEY=            # Your OpenRouter API key
 MODEL=mistralai/mistral-nemo:free # Default model to use
 ```
 
----
-
 ## ▶️ Running the Bot
 
 Make sure your environment is set up:
@@ -67,16 +61,12 @@ source venv/bin/activate        # Or venv\Scripts\activate on Windows
 python main.py
 ```
 
----
-
 ## 🛠 Deployment Notes
 
 For persistent deployments in production environments:
 
 * Use a **process manager** like `systemd`, `supervisord`, or `pm2`
 * Or run inside **Docker** for containerized management
-
----
 
 ## 📄 License
 
