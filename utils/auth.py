@@ -5,7 +5,7 @@ from config.core import Config
 
 
 class TodoistAuth:
-    scopes = ["data:read", "task:add", "data:delete"]
+    scopes = ["data:read", "task:add"]
 
     def __init__(self, client_id: str, client_secret: str):
         self.client_id = client_id
