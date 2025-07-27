@@ -1,10 +1,7 @@
+from datetime import date, timedelta
+
 from todoist_api_python.api_async import TodoistAPIAsync
 from todoist_api_python.models import Task
-
-# todo
-# дела на сегодня
-# сделай план из дел на сегодня
-# анализ ближайших дел
 
 
 class Todoist:
@@ -30,6 +27,33 @@ class Todoist:
 
         client = self.get_api_client(token)
         return await client.add_task(**task_config)
+
+    async def get_daily_tasks(self, token: str) -> list[Task]:
+        client = self.get_api_client(token)
+        all_tasks = await client.get_tasks()
+        today = date.today()
+
+        daily_tasks = []
+        async for task_list in all_tasks:
+            for task in task_list:
+                if task.due and task.due.date.date() == today:
+                    daily_tasks.append(task)
+
+        return daily_tasks
+
+    async def get_weekly_tasks(self, token: str) -> list[Task]:
+        client = self.get_api_client(token)
+        all_tasks = await client.get_tasks()
+        start_day = date.today()
+        end_day = date.today() + timedelta(days=7)
+
+        daily_tasks = []
+        async for task_list in all_tasks:
+            for task in task_list:
+                if task.due and start_day <= task.due.date.date() <= end_day:
+                    daily_tasks.append(task)
+
+        return daily_tasks
 
 
 todoist = Todoist()

@@ -11,7 +11,7 @@ from handlers import common, auth, todo
 
 async def main():
     Config.validate()
-    logging.basicConfig(level=logging.ERROR)
+    logging.basicConfig(level=logging.INFO)
 
     bot = Bot(token=Config.BOT_TOKEN)
     storage = MemoryStorage()
@@ -32,6 +32,14 @@ async def main():
         BotCommand(command="logout", description="Отвязать Todoist аккаунт"),
 
         BotCommand(command="add", description="Добавить задачу в Todoist"),
+        BotCommand(
+            command="daily_summary",
+            description="Получить сводку на день"
+        ),
+        BotCommand(
+            command="weekly_summary",
+            description="Получить сводку на день"
+        ),
     ])
 
     await db.init_db()

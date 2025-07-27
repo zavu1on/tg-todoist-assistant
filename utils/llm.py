@@ -23,8 +23,8 @@ class LLM:
             message: str,
             role: str,
             temperature: float = 0.3
-    ) -> ChatCompletion:
-        return await self.client.chat.completions.create(
+    ) -> str:
+        return (await self.client.chat.completions.create(
             extra_headers={
                 "HTTP-Referer": "https://t.me/todoist_ai_assistant_bot",
                 "X-Title": "Todoist Assistant",
@@ -42,14 +42,28 @@ class LLM:
                     "content": message
                 }
             ]
-        )
+        )).choices[0].message.content
 
     async def get_add_todo_data(self, message: str) -> str:
         resp = await self.generate_response(
             message=message,
             role=text.ADD_TASK_PROMPT
         )
-        return resp.choices[0].message.content
+        return resp
+
+    async def get_daily_summary(self, message: str) -> str:
+        resp = await self.generate_response(
+            message=message,
+            role=text.DAILY_SUMMARY_PROMPT,
+        )
+        return resp
+
+    async def get_weekly_summary(self, message: str) -> str:
+        resp = await self.generate_response(
+            message=message,
+            role=text.WEEKLY_SUMMARY_PROMPT,
+        )
+        return resp
 
 
 llm = LLM(secret_key=Config.OPENROUTER_API_KEY)
