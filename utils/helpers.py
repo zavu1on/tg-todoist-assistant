@@ -1,9 +1,9 @@
-import logging
 from enum import StrEnum
 from typing import Callable, Awaitable, TypeVar, ParamSpec
 from aiogram.types import Message
 
 from utils.db import db, UserToken
+from utils.logger import logger
 from assets.text import (
     NOT_AUTHENTICATED, TODOIST_CONNECTION_FAILED, OPENROUTER_CONNECTION_FAILED
 )
@@ -35,9 +35,9 @@ async def log_http_request(
 ) -> R | None:
     try:
         return await callback(*args, **kwargs)
-    except Exception as e:
-        logging.error(
-            f"HTTP request failed for {connector}: {e}", exc_info=True
+    except Exception as error:
+        logger.error(
+            f"HTTP request failed for {connector}", exc_info=error
         )
         error_message = (
             TODOIST_CONNECTION_FAILED
@@ -47,5 +47,5 @@ async def log_http_request(
         try:
             await message.answer(error_message, parse_mode="html")
         except Exception as send_error:
-            logging.error(f"Failed to send error message: {send_error}")
+            logger.error(f"Failed to send error message: {send_error}")
         return None

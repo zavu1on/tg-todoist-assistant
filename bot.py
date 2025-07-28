@@ -1,17 +1,20 @@
 import asyncio
-import logging
 
 from aiogram.types import BotCommand
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram import Bot, Dispatcher
 from config.core import Config
 from utils.db import db
+from utils.logger import logger
 from handlers import common, auth, todo
 
 
 async def main():
     Config.validate()
-    logging.basicConfig(level=logging.ERROR)
+    logger.info("Config validated")
+
+    if not Config.DEBUG:
+        print("Production mode")
 
     bot = Bot(token=Config.BOT_TOKEN)
     storage = MemoryStorage()
@@ -43,10 +46,13 @@ async def main():
     ])
 
     await db.init_db()
+    logger.info("Database initialized")
 
     try:
         print("Starting polling...")
         await dp.start_polling(bot, skip_updates=True)
+    except Exception as error:
+        logger.error("Bot stopped with error", exc_info=error)
     finally:
         await bot.session.close()
 

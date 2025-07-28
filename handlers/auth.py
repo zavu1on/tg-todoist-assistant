@@ -1,4 +1,3 @@
-import logging
 from uuid import uuid4
 from aiogram import types, Router, F
 from aiogram.filters import Command, CommandStart, CommandObject
@@ -81,14 +80,10 @@ async def confirm_logout_callback(callback_query: types.CallbackQuery):
     user_id = callback_query.data.split("confirm_logout_")[1]
     token = await db.get_token(user_id)
 
-    success = await log_http_request(
-        todoist_auth.reveal_access_token,
-        callback_query.message,
-        ConnectorType.TODOIST,
-        token.access_token
-    )
-    if success is None:
-        return
+    try:
+        success = await todoist_auth.reveal_access_token(token.access_token)
+    except Exception:
+        success = False
 
     await db.reveal_token(callback_query.from_user.id)
 

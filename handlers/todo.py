@@ -1,11 +1,11 @@
 import json
-import logging
 from datetime import datetime
 from aiogram import types, Router, F
 from aiogram.filters import Command
 
 from utils.llm import llm
 from utils.todoist import todoist
+from utils.logger import logger
 from utils.helpers import get_token_or_go_auth, log_http_request, ConnectorType
 from assets import text
 
@@ -42,6 +42,7 @@ async def get_daily_summary(message: types.Message):
             "due_datetime": task.due.date.isoformat() if task.due else None,
         } for task in tasks
     ], ensure_ascii=False)
+    logger.info(f"Summarize tasks prompt: {tasks_prompt}")
 
     response = await log_http_request(
         llm.get_daily_summary,
@@ -80,6 +81,7 @@ async def get_daily_summary(message: types.Message):
             "due_datetime": task.due.date.isoformat() if task.due else None,
         } for task in tasks
     ], ensure_ascii=False)
+    logger.info(f"Summarize tasks prompt: {tasks_prompt}")
 
     response = await log_http_request(
         llm.get_weekly_summary,
@@ -113,23 +115,25 @@ async def create_new_task_handler(message: types.Message):
     data: list[dict] = json.loads(data)
 
     if not data:
-        logging.warning(f"Did not understand: {message.text}")
+        logger.warning(f"Did not understand: {message.text}")
         await new_message.edit_text(text.DID_NOT_UNDERSTAND, parse_mode="html")
         return
     for obj in data:
-        if "due_datetime" in obj:
+        if "due_datetime" in obj and obj["due_datetime"]:
             obj["due_datetime"] = datetime.fromisoformat(obj["due_datetime"])
-
-    logging.info(f"Create task: {data}")
-
+        else:
+            obj["due_datetime"] = None
     try:
         tasks = []
         for obj in data:
             task = await todoist.create_task(token.access_token, obj)
             tasks.append(task)
-    except:
+    except Exception as error:
+        logger.error("Failed to create task", exc_info=error)
         await new_message.edit_text(text.ADD_TASK_FAILED, parse_mode="html")
         return
+
+    logger.info(f"Created task: {data}")
 
     await new_message.edit_text(
         text.VIEW_TASK(tasks[0]),
