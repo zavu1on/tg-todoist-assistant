@@ -44,16 +44,17 @@ Create a `.env` file in the project root:
 
 ```env
 # Telegram Bot
-BOT_TOKEN=                      # Telegram API token from @BotFather
-DB_PATH=users.db               # Path to your SQLite database file
+BOT_TOKEN=                            # Telegram API token from @BotFather
+DB_PATH=users.db                      # Path to your SQLite database file
+DEBUG=False                           # Debug mode
 
 # Todoist OAuth
-TODOIST_CLIENT_ID=             # Your Todoist OAuth App Client ID
-TODOIST_CLIENT_SECRET=         # Your Todoist OAuth App Client Secret
+TODOIST_CLIENT_ID=                    # Your Todoist OAuth App Client ID
+TODOIST_CLIENT_SECRET=                # Your Todoist OAuth App Client Secret
 
 # LLM (OpenRouter)
-OPENROUTER_API_KEY=            # Your OpenRouter API key
-MODEL=mistralai/mistral-nemo:free # Default model to use
+OPENROUTER_API_KEY=                   # Your OpenRouter API key
+MODEL=qwen/qwen-2.5-72b-instruct:free # Default model to use
 ```
 
 ---

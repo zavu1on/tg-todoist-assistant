@@ -80,10 +80,12 @@ async def confirm_logout_callback(callback_query: types.CallbackQuery):
     user_id = callback_query.data.split("confirm_logout_")[1]
     token = await db.get_token(user_id)
 
-    try:
-        success = await todoist_auth.reveal_access_token(token.access_token)
-    except Exception:
-        success = False
+    success = await log_http_request(
+        todoist_auth.reveal_access_token,
+        callback_query.message,
+        ConnectorType.TODOIST,
+        token.access_token
+    )
 
     await db.reveal_token(callback_query.from_user.id)
 

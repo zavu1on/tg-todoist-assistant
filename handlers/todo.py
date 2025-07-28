@@ -3,6 +3,7 @@ from datetime import datetime
 from aiogram import types, Router, F
 from aiogram.filters import Command
 
+from utils.db import db
 from utils.llm import llm
 from utils.todoist import todoist
 from utils.logger import logger
@@ -95,6 +96,15 @@ async def get_daily_summary(message: types.Message):
     await new_message.edit_text(response, parse_mode="Markdown")
 
 
+def get_delete_task_keyboard(user_id: str, task_id: str):
+    return types.InlineKeyboardMarkup(inline_keyboard=[[
+        types.InlineKeyboardButton(
+            text="Не сохранять в Todoist",
+            callback_data=f"delete_task_{user_id}_{task_id}"
+        )
+    ]])
+
+
 @todo_router.message(F.text)
 async def create_new_task_handler(message: types.Message):
     token = await get_token_or_go_auth(message)
@@ -138,6 +148,33 @@ async def create_new_task_handler(message: types.Message):
     await new_message.edit_text(
         text.VIEW_TASK(tasks[0]),
         parse_mode="html",
+        reply_markup=get_delete_task_keyboard(
+            message.from_user.id, tasks[0].id
+        )
     )
     for task in tasks[1:]:
-        await message.answer(text.VIEW_TASK(task), parse_mode="html")
+        await message.answer(
+            text.VIEW_TASK(task),
+            parse_mode="html",
+            reply_markup=get_delete_task_keyboard(
+                message.from_user.id, task.id
+            )
+        )
+
+
+@todo_router.callback_query(F.data.contains("delete_task_"))
+async def delete_task_callback(callback_query: types.CallbackQuery):
+    user_id, task_id = callback_query.data.split("delete_task_")[1].split("_")
+    token = await db.get_token(user_id)
+
+    success = await log_http_request(
+        todoist.delete_task,
+        callback_query,
+        ConnectorType.TODOIST,
+        token.access_token,
+        task_id
+    )
+    await callback_query.message.edit_text(
+        text.DELETE_TASK_SUCCESS if success else text.DELETE_TASK_FAILED,
+        parse_mode="html"
+    )

@@ -67,5 +67,9 @@ class Todoist:
 
         return weekly_tasks
 
+    async def delete_task(self, token: str, task_id: int) -> bool:
+        client = self.get_api_client(token)
+        return await client.delete_task(task_id)
+
 
 todoist = Todoist()
