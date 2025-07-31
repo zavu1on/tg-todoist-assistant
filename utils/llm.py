@@ -7,7 +7,7 @@ from config.core import Config
 
 def get_time_context() -> str:
     now = datetime.now()
-    return f"Сегодняшня дата и время: {now}, день недели: {now.strftime('%A')}, неделя начинается с Monday"
+    return f"Сегодняшня дата и время: {now}, день недели: {now.strftime('%A')}, неделя начинается с Monday."
 
 
 class LLM:

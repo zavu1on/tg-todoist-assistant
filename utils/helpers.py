@@ -1,6 +1,8 @@
+import json
 from enum import StrEnum
 from typing import Callable, Awaitable, TypeVar, ParamSpec
 from aiogram.types import Message
+from todoist_api_python.models import Task
 
 from utils.db import db, UserToken
 from utils.logger import logger
@@ -49,3 +51,14 @@ async def log_http_request(
         except Exception as send_error:
             logger.error(f"Failed to send error message: {send_error}")
         return None
+
+
+def get_task_prompt_data(tasks: list[Task]) -> str:
+    return json.dumps([
+        {
+            "content": task.content,
+            "description": task.description,
+            "priority": 5 - task.priority or 0,
+            "due_datetime": task.due.date.isoformat() if task.due else None,
+        } for task in tasks
+    ], ensure_ascii=False)

@@ -7,7 +7,12 @@ from utils.db import db
 from utils.llm import llm
 from utils.todoist import todoist
 from utils.logger import logger
-from utils.helpers import get_token_or_go_auth, log_http_request, ConnectorType
+from utils.helpers import (
+    get_token_or_go_auth,
+    log_http_request,
+    get_task_prompt_data,
+    ConnectorType
+)
 from assets import text
 
 todo_router = Router()
@@ -35,14 +40,7 @@ async def get_daily_summary(message: types.Message):
     if tasks is None:
         return
 
-    tasks_prompt = json.dumps([
-        {
-            "content": task.content,
-            "description": task.description,
-            "priority": task.priority or 0,
-            "due_datetime": task.due.date.isoformat() if task.due else None,
-        } for task in tasks
-    ], ensure_ascii=False)
+    tasks_prompt = get_task_prompt_data(tasks)
     logger.info(f"Summarize tasks prompt: {tasks_prompt}")
 
     response = await log_http_request(
@@ -74,14 +72,7 @@ async def get_daily_summary(message: types.Message):
     if tasks is None:
         return
 
-    tasks_prompt = json.dumps([
-        {
-            "content": task.content,
-            "description": task.description,
-            "priority": task.priority or 0,
-            "due_datetime": task.due.date.isoformat() if task.due else None,
-        } for task in tasks
-    ], ensure_ascii=False)
+    tasks_prompt = get_task_prompt_data(tasks)
     logger.info(f"Summarize tasks prompt: {tasks_prompt}")
 
     response = await log_http_request(
