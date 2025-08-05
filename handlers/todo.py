@@ -102,7 +102,7 @@ async def create_new_task_handler(message: types.Message):
     if not token:
         return
 
-    new_message = await message.answer("Обрабатываем запрос.. 🤖")
+    new_message = await message.reply("Обрабатываем запрос.. 🤖")
 
     data = await log_http_request(
         llm.get_add_todo_data,
@@ -144,7 +144,7 @@ async def create_new_task_handler(message: types.Message):
         )
     )
     for task in tasks[1:]:
-        await message.answer(
+        await message.reply(
             text.VIEW_TASK(task),
             parse_mode="html",
             reply_markup=get_delete_task_keyboard(
